@@ -13,7 +13,7 @@ module.exports = (grunt) ->
       options:
         reporter: 'spec'
         colors: true
-        compilers: ['coffee:coffee-script']
+        compilers: ['coffee:coffee-script/register']
       all: ['./test/*.coffee']
 
     coffeelint:
