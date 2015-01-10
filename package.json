@@ -13,6 +13,9 @@
     "url": "https://github.com/dudleycarr/ratelimit.js.git"
   },
   "author": "Dudley Carr",
+  "contributors": [
+    "Josh Gummersall <josh@joshgummersall.me>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/dudleycarr/ratelimit.js/issues"
