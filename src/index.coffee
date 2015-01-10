@@ -43,7 +43,7 @@ module.exports = class RateLimit
       .flatten()
       .compact()
       .filter (key) ->
-        _.isString(key) and key.length > 0
+        _.isString(key) and key.length
       .map (key) =>
         "#{@prefix}:#{key}"
       .value()
@@ -78,7 +78,7 @@ module.exports = class RateLimit
     @redisClient.keys "#{@prefix}:*", (err, results) =>
       return callback err if err
 
-      re = new RegExp("#{@prefix}:(.+)")
+      re = new RegExp "#{@prefix}:(.+)"
       keys = (re.exec(key)[1] for key in results)
       callback null, keys
 
