@@ -7,22 +7,35 @@ A NodeJS library for rate limiting using sliding windows stored in Redis.
 
 ### Express Middleware
 
+Construct rate limiter and middleware instances:
+
+```coffee
+RateLimitjs = require 'ratelimit.js'
+redis = require 'redis'
+{RateLimit, ExpressMiddleware} = RateLimitjs
+
+rateLimiter = new RateLimit redis.createClient(), [
+  {interval: 1, limit: 10}
+]
+limitMiddleware = new ExpressMiddleware rateLimiter
+```
+
 Rate limit every endpoint of an express application:
 
 ```coffee
-app.use ratelimit.trackRequests()
+app.use limitMiddleware.trackRequests()
 
-app.use ratelimit.checkRequest (req, res) ->
-  res.status(500).json message: 'rate limit exceeded'
+app.use limitMiddleware.checkRequest (req, res) ->
+  res.status(429).json message: 'rate limit exceeded'
 ```
 
 Rate limit specific endpoints:
 
 ```coffee
-app.use ratelimit.trackRequests()
+app.use limitMiddleware.trackRequests()
 
-limitEndpoint = ratelimit.checkRequest (req, res) ->
-  res.status(500).json message: 'rate limit exceeded'
+limitEndpoint = limitMiddleware.checkRequest (req, res) ->
+  res.status(429).json message: 'rate limit exceeded'
 
 app.get '/rate_limited', limitEndpoint, (req, res, next) ->
   # request is not rate limited...
@@ -37,10 +50,10 @@ Use a custom IP extraction function:
 extractIps = (req) ->
   req.ips
 
-app.use ratelimit.trackRequests extractIps
+app.use limitMiddleware.trackRequests extractIps
 
-app.use ratelimit.checkRequest extractIps, (req, res) ->
-  res.status(500).json message: 'rate limit exceeded'
+app.use limitMiddleware.checkRequest extractIps, (req, res) ->
+  res.status(429).json message: 'rate limit exceeded'
 ```
 
 Note: this is helpful if your application sits behind a proxy (or set of proxies).
