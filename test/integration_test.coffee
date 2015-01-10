@@ -1,9 +1,8 @@
-RateLimit = require '../src/index'
 _ = require 'underscore'
 async = require 'async'
-child_process = require 'child_process'
 redis = require 'redis'
 should = require 'should'
+{RateLimit} = require '../src'
 
 describe 'RateLimit', ->
   redisClient = null
@@ -93,46 +92,3 @@ describe 'RateLimit', ->
             isLimited.should.be.ok
             callback()
       ], done
-
-  describe 'middleware', ->
-    testRequest = null
-    middlewareFunc = null
-
-    beforeEach ->
-      testRequest = ip: '127.0.0.1'
-      middlewareFunc = ratelimit.checkRequest (req, res) ->
-        res.status 500
-
-    it 'should not limit a legitimate request', (done) ->
-      testResponse =
-        status: ->
-
-      bump 9, incrAndFalse, (err) ->
-        middlewareFunc testRequest, testResponse, done
-
-    it 'should limit a request', (done) ->
-      testResponse =
-        status: (code) ->
-          code.should.eql 500
-          done()
-
-      bump 10, incrAndFalse, (err) ->
-        middlewareFunc testRequest, testResponse, ->
-
-    it 'should accept a custom `extractIps` function', (done) ->
-      testRequest =
-        ips: ['12.34.56.78', '127.0.0.1']
-
-      testResponse =
-        status: (code) ->
-          code.should.eql 500
-          done()
-
-      extractIps = (req) ->
-        req.ips
-
-      middlewareFunc = ratelimit.checkRequest extractIps, (req, res) ->
-        res.status 500
-
-      bump 10, incrAndFalse, (err) ->
-        middlewareFunc testRequest, testResponse, ->
