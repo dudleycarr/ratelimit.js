@@ -15,8 +15,5 @@ module.exports = class ExpressMiddleware
     (req, res, next) =>
       @rateLimiter.check extractIps(req), (err, isLimited) ->
         return next err if err
-
-        req.rateLimited = isLimited
         return callback req, res if isLimited
-
         next()
