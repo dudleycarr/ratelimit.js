@@ -91,3 +91,15 @@ module.exports = class RateLimit
           callback limited
       async.filter keys, fn, (results) ->
         callback null, results
+
+  ###
+  Executes `callback` if a request should be rate limited, otherwise
+  continues propagating through Express request stack.
+  `callback` should have the signature: function(req, res, next) {}
+  ###
+  middleware: (callback) ->
+    (req, res, next) =>
+      @check req.ip, (err, isLimited) ->
+        return next err if err
+        return callback req, res if isLimited
+        next()

@@ -16,7 +16,7 @@ describe 'RateLimit', ->
       {interval: 60, limit: 50}
     ]
     ratelimit = new RateLimit redisClient, rules
-  
+
   afterEach (done) ->
     # Delete all keys
     redisClient.keys 'ratelimit:*', (err, keys) ->
@@ -34,7 +34,7 @@ describe 'RateLimit', ->
 
   # Increment N times AND all responses should not be limited.
   bump = (num, incrFn, callback) ->
-    async.times num, incrFn, callback 
+    async.times num, incrFn, callback
 
   describe 'incr', ->
 
@@ -93,3 +93,28 @@ describe 'RateLimit', ->
             isLimited.should.be.ok
             callback()
       ], done
+
+  describe 'middleware', ->
+    testRequest = null
+    middlewareFunc = null
+
+    beforeEach ->
+      testRequest = ip: '127.0.0.1'
+      middlewareFunc = ratelimit.middleware (req, res) ->
+        res.status 500
+
+    it 'should not limit a legitimate request', (done) ->
+      testResponse =
+        status: ->
+
+      bump 9, incrAndFalse, (err) ->
+        middlewareFunc testRequest, testResponse, done
+
+    it 'should limit a request', (done) ->
+      testResponse =
+        status: (code) ->
+          code.should.eql 500
+          done()
+
+      bump 10, incrAndFalse, (err) ->
+        middlewareFunc testRequest, testResponse, ->
