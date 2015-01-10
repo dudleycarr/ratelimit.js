@@ -97,9 +97,17 @@ module.exports = class RateLimit
   continues propagating through Express request stack.
   `callback` should have the signature: function(req, res, next) {}
   ###
-  middleware: (callback) ->
+  middleware: (extractIps, callback) ->
+    [callback, extractIps] = [extractIps, null] unless callback
+
+    extractIps or= (req) ->
+      [req.ip]
+
     (req, res, next) =>
-      @check req.ip, (err, isLimited) ->
+      @check extractIps(req), (err, isLimited) ->
         return next err if err
+
+        req.rateLimited = isLimited
         return callback req, res if isLimited
+
         next()

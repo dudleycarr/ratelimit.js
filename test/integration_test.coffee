@@ -118,3 +118,21 @@ describe 'RateLimit', ->
 
       bump 10, incrAndFalse, (err) ->
         middlewareFunc testRequest, testResponse, ->
+
+    it 'should accept a custom `extractIps` function', (done) ->
+      testRequest =
+        ips: ['12.34.56.78', '127.0.0.1']
+
+      testResponse =
+        status: (code) ->
+          code.should.eql 500
+          done()
+
+      extractIps = (req) ->
+        req.ips
+
+      middlewareFunc = ratelimit.middleware extractIps, (req, res) ->
+        res.status 500
+
+      bump 10, incrAndFalse, (err) ->
+        middlewareFunc testRequest, testResponse, ->
