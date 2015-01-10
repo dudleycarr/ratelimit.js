@@ -92,17 +92,21 @@ module.exports = class RateLimit
       async.filter keys, fn, (results) ->
         callback null, results
 
+  extractIpsFromReq: (req) ->
+    [req.ip]
+
+  trackRequests: (extractIps) ->
+    extractIps or= _.bind @extractIpsFromReq, this
+    (req, res, next) =>
+      @incr extractIps(req), next
+
   ###
   Executes `callback` if a request should be rate limited, otherwise
   continues propagating through Express request stack.
-  `callback` should have the signature: function(req, res, next) {}
   ###
-  middleware: (extractIps, callback) ->
+  checkRequest: (extractIps, callback) ->
     [callback, extractIps] = [extractIps, null] unless callback
-
-    extractIps or= (req) ->
-      [req.ip]
-
+    extractIps or= _.bind @extractIpsFromReq, this
     (req, res, next) =>
       @check extractIps(req), (err, isLimited) ->
         return next err if err

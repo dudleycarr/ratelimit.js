@@ -100,7 +100,7 @@ describe 'RateLimit', ->
 
     beforeEach ->
       testRequest = ip: '127.0.0.1'
-      middlewareFunc = ratelimit.middleware (req, res) ->
+      middlewareFunc = ratelimit.checkRequest (req, res) ->
         res.status 500
 
     it 'should not limit a legitimate request', (done) ->
@@ -131,7 +131,7 @@ describe 'RateLimit', ->
       extractIps = (req) ->
         req.ips
 
-      middlewareFunc = ratelimit.middleware extractIps, (req, res) ->
+      middlewareFunc = ratelimit.checkRequest extractIps, (req, res) ->
         res.status 500
 
       bump 10, incrAndFalse, (err) ->
