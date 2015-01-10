@@ -25,7 +25,7 @@ Rate limit every endpoint of an express application:
 ```coffee
 app.use limitMiddleware.trackRequests()
 
-app.use limitMiddleware.checkRequest (req, res) ->
+app.use limitMiddleware.checkRequest (req, res, next) ->
   res.status(429).json message: 'rate limit exceeded'
 ```
 
@@ -34,7 +34,7 @@ Rate limit specific endpoints:
 ```coffee
 app.use limitMiddleware.trackRequests()
 
-limitEndpoint = limitMiddleware.checkRequest (req, res) ->
+limitEndpoint = limitMiddleware.checkRequest (req, res, next) ->
   res.status(429).json message: 'rate limit exceeded'
 
 app.get '/rate_limited', limitEndpoint, (req, res, next) ->
@@ -42,6 +42,16 @@ app.get '/rate_limited', limitEndpoint, (req, res, next) ->
 
 app.post '/another_rate_limited', limitEndpoint, (req, res, next) ->
   # request is not rate limited...
+```
+
+Don't want to deny requests that are rate limited? Not sure why, but go ahead:
+
+```coffee
+app.use limitMiddleware.trackRequests()
+
+app.use limitMiddleware.checkRequest (req, res, next) ->
+  req.rateLimited = true
+  next()
 ```
 
 Use a custom IP extraction function:
@@ -52,7 +62,7 @@ extractIps = (req) ->
 
 app.use limitMiddleware.trackRequests extractIps
 
-app.use limitMiddleware.checkRequest extractIps, (req, res) ->
+app.use limitMiddleware.checkRequest extractIps, (req, res, next) ->
   res.status(429).json message: 'rate limit exceeded'
 ```
 

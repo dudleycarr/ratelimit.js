@@ -21,7 +21,7 @@ describe 'Express Middleware', ->
     # Set up express and supertest for use throughout tests
     @app = express()
     @app.use @middleware.trackRequests()
-    @app.use @middleware.checkRequest (req, res) ->
+    @app.use @middleware.checkRequest (req, res, next) ->
       res.status(429).end()
 
     @app.get '/', (req, res, next) ->
