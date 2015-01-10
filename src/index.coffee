@@ -17,7 +17,7 @@ module.exports = class RateLimit
     @rules = @convertRules rules
 
   readLua: (filename) ->
-    fs.readFileSync("#{__dirname}/../lua/#{filename}.lua").toString()
+    fs.readFileSync "#{__dirname}/../lua/#{filename}.lua", 'utf8'
 
   checkLimitScript: ->
     [
@@ -39,50 +39,53 @@ module.exports = class RateLimit
 
   scriptArgs: (keys, weight = 1) ->
     # Keys has to be a list
-    adjustedKeys = if _.isArray(keys) then keys else [keys]
-    adjustedKeys = _.chain(adjustedKeys)
+    adjustedKeys = _.chain([keys])
+      .flatten()
       .compact()
-      .filter(_.isString)
       .filter (key) ->
-        key.length > 0
+        _.isString(key) and key.length > 0
       .map (key) =>
         "#{@prefix}:#{key}"
       .value()
 
-    throw new Error "Bad keys: #{keys}" if adjustedKeys.length is 0
+    throw new Error "Bad keys: #{keys}" unless adjustedKeys.length
 
     rules = JSON.stringify @rules
-    ts = Math.floor(Date.now() / 1000)
+    ts = Math.floor Date.now() / 1000
     [adjustedKeys, [rules, ts, weight]]
 
   check: (keys, callback) ->
     try
       [keys, args] = @scriptArgs keys
-      @eval.exec @checkFn, keys, args, (err, result) ->
-        callback err, result is 1
     catch err
-      callback err
+      return callback err
+
+    @eval.exec @checkFn, keys, args, (err, result) ->
+      callback err, result is 1
 
   incr: (keys, weight, callback) ->
+    # Weight is optional.
+    [weight, callback] = [1, weight] if arguments.length is 2
     try
-      # Weight is optional.
-      [weight, callback] = [1, weight] if arguments.length is 2
       [keys, args] = @scriptArgs keys, weight
-      @eval.exec @checkIncrFn, keys, args, (err, result) ->
-        callback err, result is 1
     catch err
-      callback err
+      return callback err
+
+    @eval.exec @checkIncrFn, keys, args, (err, result) ->
+      callback err, result is 1
 
   keys: (callback) ->
     @redisClient.keys "#{@prefix}:*", (err, results) =>
       return callback err if err
+
       re = new RegExp("#{@prefix}:(.+)")
       keys = (re.exec(key)[1] for key in results)
-      callback err, keys
+      callback null, keys
 
   limitedKeys: (callback) ->
     @keys (err, keys) =>
       return callback err if err
+
       fn = (key, callback) =>
         @check key, (err, limited) ->
           callback limited
