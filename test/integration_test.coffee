@@ -1,9 +1,8 @@
-RateLimit = require '../src/index'
 _ = require 'underscore'
 async = require 'async'
-child_process = require 'child_process'
 redis = require 'redis'
 should = require 'should'
+{RateLimit} = require '../src'
 
 describe 'RateLimit', ->
   redisClient = null
@@ -16,7 +15,7 @@ describe 'RateLimit', ->
       {interval: 60, limit: 50}
     ]
     ratelimit = new RateLimit redisClient, rules
-  
+
   afterEach (done) ->
     # Delete all keys
     redisClient.keys 'ratelimit:*', (err, keys) ->
@@ -34,7 +33,7 @@ describe 'RateLimit', ->
 
   # Increment N times AND all responses should not be limited.
   bump = (num, incrFn, callback) ->
-    async.times num, incrFn, callback 
+    async.times num, incrFn, callback
 
   describe 'incr', ->
 
