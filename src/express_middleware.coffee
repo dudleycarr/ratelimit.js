@@ -1,7 +1,7 @@
 module.exports = class ExpressMiddleware
   constructor: (@rateLimiter) ->
 
-  extractIpsFromReq: (req) =>
+  extractIpsFromReq: (req) ->
     [req.ip]
 
   trackRequests: (extractIps) ->
