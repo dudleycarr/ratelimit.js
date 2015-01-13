@@ -16,8 +16,9 @@ Background
 ----------
 See this excellent articles on how the sliding window rate limiting with Redis
 works:
-[Introduction to Rate Limiting with Redis Part 1](http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with.html)
-[Introduction to Rate Limiting with Redis Part 2](http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with_26.html)
+
+* [Introduction to Rate Limiting with Redis Part 1](http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with.html)
+* [Introduction to Rate Limiting with Redis Part 2](http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with_26.html)
 
 Install
 -------
@@ -151,5 +152,6 @@ ChangeLog
 
 Authors
 -------
-[Dudley Carr](https://github.com/dudleycarr)
-[Josh Gummersall](https://github.com/joshgummersall)
+
+* [Dudley Carr](https://github.com/dudleycarr)
+* [Josh Gummersall](https://github.com/joshgummersall)
