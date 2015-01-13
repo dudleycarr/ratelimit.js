@@ -3,7 +3,7 @@ RateLimit.js
 [![Build
 Status](https://travis-ci.org/dudleycarr/ratelimit.js.svg)](https://travis-ci.org/dudleycarr/ratelimit.js) [![npm version](https://badge.fury.io/js/ratelimit.js.svg)](http://badge.fury.io/js/ratelimit.js)
 
-A NodeJS library for efficiently rate limiting using sliding windows stored in Redis.
+A NodeJS library for efficient rate limiting using sliding windows stored in Redis.
 
 Features
 --------
@@ -33,7 +33,7 @@ Usage
 Basic example:
 
 ```javascript
-var RateLimit = require('ratelimt.js').RateLimit;
+var RateLimit = require('ratelimit.js').RateLimit;
 var redis = require('redis');
 
 var client = redis.createClient();
@@ -42,18 +42,20 @@ var rules = [
   {interval: 1, limit: 5},
   {interval: 3600, limit: 1000}
   ];
-var limiter = RateLimit(client, rules);
+var limiter = new RateLimit(client, rules);
 
-var showRatedLimited = function(err, isRateLimited) {
-  return console.log("Error: " + err);
+var showRateLimited = function(err, isRateLimited) {
+  if (err) {
+    return console.log("Error: " + err);
+  }
+
   console.log("Is rate limited? " + isRateLimited);
 };
 
 // Exceed rate limit.
 for(var i = 0; i < 10; i++) {
-  limiter.incr '127.0.0.1', function() {};
+  limiter.incr('127.0.0.1', showRateLimited);
 }
-ratelimit.incr('127.0.0.1', isRateLimited);
 ```
 
 
