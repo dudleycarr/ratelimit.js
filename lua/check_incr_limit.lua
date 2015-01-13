@@ -1,3 +1,4 @@
+-- Credit: http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with_26.html
 -- there is enough resources, update the counts
 for i, limit in ipairs(limits) do
     local saved = saved_keys[i]

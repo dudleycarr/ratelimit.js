@@ -1,8 +1,8 @@
 {
   "name": "ratelimit.js",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A NodeJS library for rate limiting using sliding windows stored in Redis.",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "prepublish": "coffee --bare --compile --output lib src/*.coffee",
     "postpublish": "rm -rf lib",
@@ -13,6 +13,9 @@
     "url": "https://github.com/dudleycarr/ratelimit.js.git"
   },
   "author": "Dudley Carr",
+  "contributors": [
+    "Josh Gummersall <josh@joshgummersall.me>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/dudleycarr/ratelimit.js/issues"
@@ -26,6 +29,7 @@
   "devDependencies": {
     "coffee-script": "^1.8.0",
     "coffeelint": "^1.8.1",
+    "express": "^4.10.7",
     "grunt": "^0.4.5",
     "grunt-cli": "^0.1.13",
     "grunt-coffeelint": "0.0.13",
@@ -34,6 +38,7 @@
     "mocha": "^2.0.1",
     "redis": "^0.12.1",
     "should": "^4.4.4",
-    "sinon": "^1.12.2"
+    "sinon": "^1.12.2",
+    "supertest": "^0.15.0"
   }
 }
