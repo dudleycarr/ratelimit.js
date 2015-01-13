@@ -32,12 +32,82 @@
 <a id="ratelimitjs" class="anchor" href="#ratelimitjs" aria-hidden="true"><span class="octicon octicon-link"></span></a>RateLimit.js</h1>
 
 <p><a href="https://travis-ci.org/dudleycarr/ratelimit.js"><img src="https://travis-ci.org/dudleycarr/ratelimit.js.svg" alt="Build
-Status"></a></p>
+Status"></a> <a href="http://badge.fury.io/js/ratelimit.js"><img src="https://badge.fury.io/js/ratelimit.js.svg" alt="npm version"></a></p>
 
-<p>A NodeJS library for rate limiting using sliding windows stored in Redis.</p>
+<p>A NodeJS library for efficient rate limiting using sliding windows stored in Redis.</p>
 
-<h3>
-<a id="express-middleware" class="anchor" href="#express-middleware" aria-hidden="true"><span class="octicon octicon-link"></span></a>Express Middleware</h3>
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>Uses a sliding window for a rate limit rule</li>
+<li>Multiple rules per instance</li>
+<li>Multiple instances of RateLimit side-by-side for different categories of users.</li>
+<li>Includes Express middleware</li>
+</ul>
+
+<h2>
+<a id="background" class="anchor" href="#background" aria-hidden="true"><span class="octicon octicon-link"></span></a>Background</h2>
+
+<p>See this excellent articles on how the sliding window rate limiting with Redis
+works:</p>
+
+<ul>
+<li><a href="http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with.html">Introduction to Rate Limiting with Redis Part 1</a></li>
+<li><a href="http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with_26.html">Introduction to Rate Limiting with Redis Part 2</a></li>
+</ul>
+
+<h2>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install</h2>
+
+<pre><code>npm install ratelimit.js
+</code></pre>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Basic example:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-s">var</span> RateLimit <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>ratelimit.js<span class="pl-pds">'</span></span>).RateLimit;
+<span class="pl-s">var</span> redis <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span>);
+
+<span class="pl-s">var</span> client <span class="pl-k">=</span> redis.createClient();
+
+<span class="pl-s">var</span> rules <span class="pl-k">=</span> [
+  {interval<span class="pl-k">:</span> <span class="pl-c1">1</span>, limit<span class="pl-k">:</span> <span class="pl-c1">5</span>},
+  {interval<span class="pl-k">:</span> <span class="pl-c1">3600</span>, limit<span class="pl-k">:</span> <span class="pl-c1">1000</span>}
+  ];
+<span class="pl-s">var</span> limiter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">RateLimit</span>(client, rules);
+
+<span class="pl-s">var</span> <span class="pl-en">showRateLimited</span> <span class="pl-k">=</span> <span class="pl-st">function</span>(<span class="pl-vpf">err</span>, <span class="pl-vpf">isRateLimited</span>) {
+  <span class="pl-k">if</span> (err) {
+    <span class="pl-k">return</span> <span class="pl-en">console</span><span class="pl-s3">.log</span>(<span class="pl-s1"><span class="pl-pds">"</span>Error: <span class="pl-pds">"</span></span> <span class="pl-k">+</span> err);
+  }
+
+  <span class="pl-en">console</span><span class="pl-s3">.log</span>(<span class="pl-s1"><span class="pl-pds">"</span>Is rate limited? <span class="pl-pds">"</span></span> <span class="pl-k">+</span> isRateLimited);
+};
+
+<span class="pl-c">// Exceed rate limit.</span>
+<span class="pl-k">for</span>(<span class="pl-s">var</span> i <span class="pl-k">=</span> <span class="pl-c1">0</span>; i <span class="pl-k">&lt;</span> <span class="pl-c1">10</span>; i<span class="pl-k">++</span>) {
+  limiter.incr(<span class="pl-s1"><span class="pl-pds">'</span>127.0.0.1<span class="pl-pds">'</span></span>, showRateLimited);
+}</pre></div>
+
+<p>Output:</p>
+
+<pre><code>Is rate limited? false
+Is rate limited? false
+Is rate limited? false
+Is rate limited? false
+Is rate limited? false
+Is rate limited? true
+Is rate limited? true
+Is rate limited? true
+Is rate limited? true
+Is rate limited? true
+</code></pre>
+
+<h2>
+<a id="express-middleware-usage" class="anchor" href="#express-middleware-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Express Middleware Usage</h2>
 
 <p>Construct rate limiter and middleware instances:</p>
 
@@ -95,6 +165,36 @@ app.use(limitMiddleware.checkRequest(extractIps, <span class="pl-st">function</s
 
 <p>Note: this is helpful if your application sits behind a proxy (or set of proxies).
 <a href="http://expressjs.com/guide/behind-proxies.html">Read more about express, proxies and req.ips here</a>.</p>
+
+<h2>
+<a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>ChangeLog</h2>
+
+<ul>
+<li>
+<strong>1.1.0</strong>
+
+<ul>
+<li>Add Express middleware</li>
+<li>Updated README</li>
+<li>Added credits on Lua code</li>
+</ul>
+</li>
+<li>
+<strong>1.0.0</strong>
+
+<ul>
+<li>Initial RateLimit support</li>
+</ul>
+</li>
+</ul>
+
+<h2>
+<a id="authors" class="anchor" href="#authors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors</h2>
+
+<ul>
+<li><a href="https://github.com/dudleycarr">Dudley Carr</a></li>
+<li><a href="https://github.com/joshgummersall">Josh Gummersall</a></li>
+</ul>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/dudleycarr">dudleycarr</a></p>
