@@ -120,17 +120,13 @@ Is rate limited? true
 
 <p>Rate limit every endpoint of an express application:</p>
 
-<div class="highlight highlight-javascript"><pre>app.use(limitMiddleware.trackRequests());
-
-app.use(limitMiddleware.checkRequest(<span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
+<div class="highlight highlight-javascript"><pre>app.use(limitMiddleware.middleware(<span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
   res.<span class="pl-sc">status</span>(<span class="pl-c1">429</span>).json({message<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>rate limit exceeded<span class="pl-pds">'</span></span>});
 }));</pre></div>
 
 <p>Rate limit specific endpoints:</p>
 
-<div class="highlight highlight-javascript"><pre>app.use(limitMiddleware.trackRequests());
-
-<span class="pl-s">var</span> limitEndpoint <span class="pl-k">=</span> limitMiddleware.checkRequest(<span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
+<div class="highlight highlight-javascript"><pre><span class="pl-s">var</span> limitEndpoint <span class="pl-k">=</span> limitMiddleware.middleware(<span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
   res.<span class="pl-sc">status</span>(<span class="pl-c1">429</span>).json({message<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>rate limit exceeded<span class="pl-pds">'</span></span>});
 });
 
@@ -144,9 +140,7 @@ app.post(<span class="pl-s1"><span class="pl-pds">'</span>/another_rate_limited<
 
 <p>Don't want to deny requests that are rate limited? Not sure why, but go ahead:</p>
 
-<div class="highlight highlight-javascript"><pre>app.use(limitMiddleware.trackRequests());
-
-app.use(limitMiddleware.checkRequest(<span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
+<div class="highlight highlight-javascript"><pre>app.use(limitMiddleware.middleware(<span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
   req.rateLimited <span class="pl-k">=</span> <span class="pl-c1">true</span>;
   next();
 }));</pre></div>
@@ -157,9 +151,7 @@ app.use(limitMiddleware.checkRequest(<span class="pl-st">function</span>(<span c
   <span class="pl-k">return</span> req.ips;
 }
 
-app.use(limitMiddleware.trackRequests(extractIps));
-
-app.use(limitMiddleware.checkRequest(extractIps, <span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
+app.use(limitMiddleware.middleware(extractIps, <span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
   res.<span class="pl-sc">status</span>(<span class="pl-c1">429</span>).json({message<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>rate limit exceeded<span class="pl-pds">'</span></span>});
 }));</pre></div>
 
@@ -170,6 +162,13 @@ app.use(limitMiddleware.checkRequest(extractIps, <span class="pl-st">function</s
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>ChangeLog</h2>
 
 <ul>
+<li>
+<strong>1.2.0</strong>
+
+<ul>
+<li>Remove <code>checkRequest</code> and <code>trackRequests</code> from middleware in favor of single <code>middleware</code> function</li>
+</ul>
+</li>
 <li>
 <strong>1.1.0</strong>
 
