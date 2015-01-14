@@ -13,15 +13,14 @@ describe 'Express Middleware', ->
     # Set up rate limiter instance, mock, and middleware instance
     @redisClient = redis.createClient()
     @ratelimit = new RateLimit @redisClient, [
-      {interval: 1, limit: 2}
+      {interval: 1, limit: 1}
     ]
     @ratelimitMock = @sandbox.mock @ratelimit
     @middleware = new ExpressMiddleware @ratelimit
 
     # Set up express and supertest for use throughout tests
     @app = express()
-    @app.use @middleware.trackRequests()
-    @app.use @middleware.checkRequest (req, res, next) ->
+    @app.use @middleware.middleware (req, res, next) ->
       res.status(429).end()
 
     @app.get '/', (req, res, next) ->
@@ -44,7 +43,7 @@ describe 'Express Middleware', ->
       @middleware.extractIpsFromReq(ip: '127.0.0.1')
         .should.eql ['127.0.0.1']
 
-  describe 'trackRequests', ->
+  describe '.middleware', ->
     it 'should track a request IP', (done) ->
       @ratelimitMock.expects('incr')
         .withArgs(['127.0.0.1'])
@@ -55,13 +54,10 @@ describe 'Express Middleware', ->
         @ratelimitMock.verify()
         done err
 
-  describe 'checkRequest', ->
     it 'should allow the first request and limit the second', (done) ->
       async.series [
         (done) =>
           @request().get('/').expect(200).end done
-
         (done) =>
           @request().get('/').expect(429).end done
-
       ], done
