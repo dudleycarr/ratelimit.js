@@ -90,9 +90,7 @@ var limitMiddleware = new ExpressMiddleware(rateLimiter);
 Rate limit every endpoint of an express application:
 
 ```javascript
-app.use(limitMiddleware.trackRequests());
-
-app.use(limitMiddleware.checkRequest(function(req, res, next) {
+app.use(limitMiddleware.middleware(function(req, res, next) {
   res.status(429).json({message: 'rate limit exceeded'});
 }));
 ```
@@ -100,9 +98,7 @@ app.use(limitMiddleware.checkRequest(function(req, res, next) {
 Rate limit specific endpoints:
 
 ```javascript
-app.use(limitMiddleware.trackRequests());
-
-var limitEndpoint = limitMiddleware.checkRequest(function(req, res, next) {
+var limitEndpoint = limitMiddleware.middleware(function(req, res, next) {
   res.status(429).json({message: 'rate limit exceeded'});
 });
 
@@ -118,9 +114,7 @@ app.post('/another_rate_limited', limitEndpoint, function(req, res, next) {
 Don't want to deny requests that are rate limited? Not sure why, but go ahead:
 
 ```javascript
-app.use(limitMiddleware.trackRequests());
-
-app.use(limitMiddleware.checkRequest(function(req, res, next) {
+app.use(limitMiddleware.middleware(function(req, res, next) {
   req.rateLimited = true;
   next();
 }));
@@ -133,9 +127,7 @@ function extractIps(req) {
   return req.ips;
 }
 
-app.use(limitMiddleware.trackRequests(extractIps));
-
-app.use(limitMiddleware.checkRequest(extractIps, function(req, res, next) {
+app.use(limitMiddleware.middleware(extractIps, function(req, res, next) {
   res.status(429).json({message: 'rate limit exceeded'});
 }));
 ```
@@ -145,6 +137,8 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.2.0**
+  * Simplifying Express middleware
 * **1.1.0**
   * Add Express middleware
   * Updated README
