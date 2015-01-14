@@ -138,7 +138,7 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 ChangeLog
 ---------
 * **1.2.0**
-  * Simplifying Express middleware
+  * Remove `checkRequest` and `trackRequests` from middleware in favor of single `middleware` function
 * **1.1.0**
   * Add Express middleware
   * Updated README
