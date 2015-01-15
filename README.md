@@ -141,7 +141,7 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
-* **1.2.1**
+* **1.3.0**
   * Add options to ExpressMiddleware constructor and support ignoring redis level errors
 * **1.2.0**
   * Remove `checkRequest` and `trackRequests` from middleware in favor of single `middleware` function
