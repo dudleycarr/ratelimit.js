@@ -61,3 +61,16 @@ describe 'Express Middleware', ->
         (done) =>
           @request().get('/').expect(429).end done
       ], done
+
+    it 'should ignore a redis-level error', (done) ->
+      @middleware.options.ignoreRedisErrors = true
+
+      @ratelimitMock
+        .expects('incr')
+        .withArgs(['127.0.0.1'])
+        .once()
+        .yields new Error()
+
+      @request().get('/').expect(200).end (err) =>
+        @ratelimitMock.verify()
+        done err
