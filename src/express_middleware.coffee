@@ -1,5 +1,5 @@
 module.exports = class ExpressMiddleware
-  constructor: (@rateLimiter) ->
+  constructor: (@rateLimiter, @options = {}) ->
 
   extractIpsFromReq: (req) ->
     [req.ip]
@@ -8,7 +8,12 @@ module.exports = class ExpressMiddleware
     [callback, extractIps] = [extractIps, null] unless callback
     extractIps or= @extractIpsFromReq
     (req, res, next) =>
-      @rateLimiter.incr extractIps(req), (err, isLimited) ->
-        return next err if err
+      @rateLimiter.incr extractIps(req), (err, isLimited = false) =>
+        if err
+          if @options.ignoreRedisErrors
+            isLimited = false
+          else
+            return next err
+
         return callback req, res, next if isLimited
         next()
