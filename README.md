@@ -141,6 +141,8 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.4.0**
+  * Add `violatedRules` to RateLimit class to return the set of rules a key has violated
 * **1.3.0**
   * Add options to ExpressMiddleware constructor and support ignoring redis level errors
 * **1.2.0**
