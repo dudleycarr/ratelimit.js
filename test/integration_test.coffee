@@ -74,8 +74,7 @@ describe 'RateLimit', ->
         # Do one more request to put us over the top for the 2nd rule
         (callback) ->
           incrAndTrue null, done
-        ], (err) ->
-          done err
+        ], done
 
   describe 'check', ->
     it 'should not be limited if the key does not exist', (done) ->
@@ -91,4 +90,18 @@ describe 'RateLimit', ->
           ratelimit.check '127.0.0.1', (err, isLimited) ->
             isLimited.should.be.ok
             callback()
+      ], done
+
+  describe 'violatedRules', ->
+    it 'should return the set of rules a key has violated', (done) ->
+      async.series [
+        (callback) ->
+          bump 10, incrAndFalse, callback
+        (callback) ->
+          bump 1, incrAndTrue, callback
+        (callback) ->
+          ratelimit.violatedRules ['127.0.0.1'], (err, violated) ->
+            violated.length.should.eql 1
+            violated[0].should.eql {interval: 1, limit: 10}
+            callback err
       ], done

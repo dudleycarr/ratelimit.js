@@ -141,6 +141,8 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.4.0**
+  * Add `violatedRules` to RateLimit class to return the set of rules a key has violated
 * **1.3.1**
   * Small fix to `middleware` function in `ExpressMiddleware`
 * **1.3.0**

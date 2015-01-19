@@ -82,6 +82,24 @@ module.exports = class RateLimit
       keys = (re.exec(key)[1] for key in results)
       callback null, keys
 
+  violatedRules: (keys, callback) ->
+    checkKey = (key, callback) =>
+      checkRule = (rule, callback) =>
+        # Note: this mirrors precision computation in `check_limit.lua`
+        # on lines 7 and 8 and count key construction on line 16
+        [interval, limit, precision] = rule
+        precision = Math.min (precision ? interval), interval
+        countKey = "#{interval}:#{precision}:"
+
+        @redisClient.hget "#{@prefix}:#{key}", countKey, (err, count = -1) ->
+          return callback() unless count >= limit
+          callback null, {interval, limit}
+
+      async.map @rules, checkRule, (err, violatedRules) ->
+        callback err, _.compact violatedRules
+
+    async.concat _.flatten([keys]), checkKey, callback
+
   limitedKeys: (callback) ->
     @keys (err, keys) =>
       return callback err if err
