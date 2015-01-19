@@ -8,7 +8,7 @@ module.exports = class ExpressMiddleware
     [callback, extractIps] = [extractIps, null] unless callback
     extractIps or= @extractIpsFromReq
     (req, res, next) =>
-      @rateLimiter.incr extractIps(req), (err, isLimited = false) =>
+      @rateLimiter.incr extractIps(req), (err, isLimited) =>
         if err
           if @options.ignoreRedisErrors
             isLimited = false
