@@ -52,6 +52,7 @@ module.exports = class RateLimit
 
     rules = JSON.stringify @rules
     ts = Math.floor Date.now() / 1000
+    weight = Math.max weight, 1
     [adjustedKeys, [rules, ts, weight]]
 
   check: (keys, callback) ->
