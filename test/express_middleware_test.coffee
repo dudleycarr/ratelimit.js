@@ -76,7 +76,7 @@ describe 'Express Middleware', ->
         done err
 
     it 'should support custom request weights', (done) ->
-      extractWeight = (req) ->
+      weight = (req) ->
         10
 
       @ratelimitMock
@@ -85,7 +85,7 @@ describe 'Express Middleware', ->
         .once()
         .yields()
 
-      weighted = @middleware.middleware {extractWeight}, (req, res, next) ->
+      weighted = @middleware.middleware {weight}, (req, res, next) ->
         res.status(429).end()
 
       @app.get '/weight', weighted, (req, res, next) ->

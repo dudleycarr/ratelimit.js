@@ -4,19 +4,19 @@ module.exports = class ExpressMiddleware
   extractIps: (req) ->
     [req.ip]
 
-  extractWeight: (req) ->
+  weight: (req) ->
     1
 
   middleware: (options, callback) ->
     [callback, options] = [options, {}] unless callback
 
     # Pull out and default extraction functions
-    {extractIps, extractWeight} = options
+    {extractIps, weight} = options
     extractIps or= @extractIps
-    extractWeight or= @extractWeight
+    weight or= @weight
 
     (req, res, next) =>
-      @rateLimiter.incr extractIps(req), extractWeight(req),
+      @rateLimiter.incr extractIps(req), weight(req),
         (err, isLimited) =>
           if err
             if @options.ignoreRedisErrors
