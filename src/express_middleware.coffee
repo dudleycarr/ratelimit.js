@@ -1,19 +1,28 @@
 module.exports = class ExpressMiddleware
   constructor: (@rateLimiter, @options = {}) ->
 
-  extractIpsFromReq: (req) ->
+  extractIps: (req) ->
     [req.ip]
 
-  middleware: (extractIps, callback) ->
-    [callback, extractIps] = [extractIps, null] unless callback
-    extractIps or= @extractIpsFromReq
-    (req, res, next) =>
-      @rateLimiter.incr extractIps(req), (err, isLimited) =>
-        if err
-          if @options.ignoreRedisErrors
-            isLimited = false
-          else
-            return next err
+  extractWeight: (req) ->
+    1
 
-        return callback req, res, next if isLimited
-        next()
+  middleware: (options, callback) ->
+    [callback, options] = [options, {}] unless callback
+
+    # Pull out and default extraction functions
+    {extractIps, extractWeight} = options
+    extractIps or= @extractIps
+    extractWeight or= @extractWeight
+
+    (req, res, next) =>
+      @rateLimiter.incr extractIps(req), extractWeight(req),
+        (err, isLimited) =>
+          if err
+            if @options.ignoreRedisErrors
+              isLimited = false
+            else
+              return next err
+
+          return callback req, res, next if isLimited
+          next()

@@ -124,14 +124,23 @@ app.use(limitMiddleware.middleware(function(req, res, next) {
 }));
 ```
 
-Use a custom IP extraction function:
+Use custom IP extraction and request weight functions:
 
 ```javascript
 function extractIps(req) {
   return req.ips;
 }
 
-app.use(limitMiddleware.middleware(extractIps, function(req, res, next) {
+function extractWeight(req) {
+  return Math.round(Math.random() * 100);
+}
+
+var options = {
+  extractIps: extractIps,
+  extractWeight: extractWeight
+};
+
+app.use(limitMiddleware.middleware(options, function(req, res, next) {
   res.status(429).json({message: 'rate limit exceeded'});
 }));
 ```
@@ -141,6 +150,9 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.5.0**
+  * Add `extractWeight` functionality to `ExpressMiddleware`
+  * `ExpressMiddleware.middleware` now takes an options object instead of just `extractIps`
 * **1.4.0**
   * Add `violatedRules` to RateLimit class to return the set of rules a key has violated
 * **1.3.1**
