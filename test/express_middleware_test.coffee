@@ -20,10 +20,10 @@ describe 'Express Middleware', ->
 
     # Set up express and supertest for use throughout tests
     @app = express()
-    @app.use @middleware.middleware (req, res, next) ->
+    middleware = @middleware.middleware (req, res, next) ->
       res.status(429).end()
 
-    @app.get '/', (req, res, next) ->
+    @app.get '/', middleware, (req, res, next) ->
       res.status(200).end()
 
     @request = =>
@@ -38,9 +38,9 @@ describe 'Express Middleware', ->
       else
         done()
 
-  describe 'extractIpsFromReq', ->
+  describe 'extractIps', ->
     it 'should extract an IP from an express-style request', ->
-      @middleware.extractIpsFromReq(ip: '127.0.0.1')
+      @middleware.extractIps(ip: '127.0.0.1')
         .should.eql ['127.0.0.1']
 
   describe '.middleware', ->
@@ -72,5 +72,25 @@ describe 'Express Middleware', ->
         .yields new Error()
 
       @request().get('/').expect(200).end (err) =>
+        @ratelimitMock.verify()
+        done err
+
+    it 'should support custom request weights', (done) ->
+      weight = (req) ->
+        10
+
+      @ratelimitMock
+        .expects('incr')
+        .withArgs(['127.0.0.1'], 10)
+        .once()
+        .yields()
+
+      weighted = @middleware.middleware {weight}, (req, res, next) ->
+        res.status(429).end()
+
+      @app.get '/weight', weighted, (req, res, next) ->
+        res.status(200).end()
+
+      @request().get('/weight').expect(200).end (err) =>
         @ratelimitMock.verify()
         done err
