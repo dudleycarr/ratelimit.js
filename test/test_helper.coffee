@@ -1,3 +1,4 @@
+RateLimit = require '../src/rate_limit'
 async = require 'async'
 redis = require 'redis'
 
@@ -13,12 +14,12 @@ afterEach (done) ->
 
   async.parallel [
     (callback) ->
-      deleteAllKeys 'ratelimit:*', callback
+      deleteAllKeys "#{RateLimit.DEFAULT_PREFIX}:*", callback
 
     (callback) ->
-      deleteAllKeys 'whitelist', callback
+      deleteAllKeys RateLimit.WHITELIST_KEY, callback
 
     (callback) ->
-      deleteAllKeys 'blacklist', callback
+      deleteAllKeys RateLimit.BLACKLIST_KEY, callback
 
   ], done

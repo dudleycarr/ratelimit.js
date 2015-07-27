@@ -5,6 +5,8 @@ fs = require 'fs'
 redis = require 'redis'
 
 module.exports = class RateLimit
+  @DEFAULT_PREFIX: 'ratelimit'
+
   # Note: must sync with lua key in lua/check_whitelist.lua
   @WHITELIST_KEY: 'whitelist'
 
@@ -15,7 +17,7 @@ module.exports = class RateLimit
   # blacklisted action. Must sync with return codes in lua/check_limit.lua
   @DENIED_NUMS: [1, 2]
 
-  constructor: (@redisClient, rules, @prefix = 'ratelimit') ->
+  constructor: (@redisClient, rules, @prefix = @constructor.DEFAULT_PREFIX) ->
     @checkFn = 'check_rate_limit'
     @checkIncrFn = 'check_incr_rate_limit'
 
