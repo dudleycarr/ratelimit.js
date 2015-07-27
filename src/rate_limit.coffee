@@ -142,7 +142,7 @@ module.exports = class RateLimit
     async.each keys, whitelist, callback
 
   unwhitelist: (keys, callback) ->
-    unwhitelist = (key, callback) ->
+    unwhitelist = (key, callback) =>
       @redisClient.srem @constructor.WHITELIST_KEY, "#{@prefix}:#{key}",
         callback
 
@@ -164,8 +164,8 @@ module.exports = class RateLimit
     async.each keys, blacklist, callback
 
   unblacklist: (keys, callback) ->
-    unblacklist = (key, callback) ->
+    unblacklist = (key, callback) =>
       @redisClient.srem @constructor.BLACKLIST_KEY, "#{@prefix}:#{key}",
         callback
 
-    async.each keys, unwhitelist, callback
+    async.each keys, unblacklist, callback
