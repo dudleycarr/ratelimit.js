@@ -5,8 +5,19 @@ fs = require 'fs'
 redis = require 'redis'
 
 module.exports = class RateLimit
+  @DEFAULT_PREFIX: 'ratelimit'
 
-  constructor: (@redisClient, rules, @prefix = 'ratelimit') ->
+  # Note: must sync with lua key in lua/check_whitelist.lua
+  @WHITELIST_KEY: 'whitelist'
+
+  # Note: must sync with lua key in lua/check_blacklist.lua
+  @BLACKLIST_KEY: 'blacklist'
+
+  # Note: 1 is returned for a normal rate limited action, 2 is returned for a
+  # blacklisted action. Must sync with return codes in lua/check_limit.lua
+  @DENIED_NUMS: [1, 2]
+
+  constructor: (@redisClient, rules, @prefix = @constructor.DEFAULT_PREFIX) ->
     @checkFn = 'check_rate_limit'
     @checkIncrFn = 'check_incr_rate_limit'
 
@@ -22,6 +33,8 @@ module.exports = class RateLimit
   checkLimitScript: ->
     [
       @readLua 'unpack_args'
+      @readLua 'check_whitelist'
+      @readLua 'check_blacklist'
       @readLua 'check_limit'
       'return 0'
     ].join '\n'
@@ -29,6 +42,8 @@ module.exports = class RateLimit
   checkLimitIncrScript: ->
     [
       @readLua 'unpack_args'
+      @readLua 'check_whitelist'
+      @readLua 'check_blacklist'
       @readLua 'check_limit'
       @readLua 'check_incr_limit'
     ].join '\n'
@@ -61,8 +76,8 @@ module.exports = class RateLimit
     catch err
       return callback err
 
-    @eval.exec @checkFn, keys, args, (err, result) ->
-      callback err, result is 1
+    @eval.exec @checkFn, keys, args, (err, result) =>
+      callback err, result in @constructor.DENIED_NUMS
 
   incr: (keys, weight, callback) ->
     # Weight is optional.
@@ -72,8 +87,8 @@ module.exports = class RateLimit
     catch err
       return callback err
 
-    @eval.exec @checkIncrFn, keys, args, (err, result) ->
-      callback err, result is 1
+    @eval.exec @checkIncrFn, keys, args, (err, result) =>
+      callback err, result in @constructor.DENIED_NUMS
 
   keys: (callback) ->
     @redisClient.keys "#{@prefix}:*", (err, results) =>
@@ -110,3 +125,47 @@ module.exports = class RateLimit
           callback limited
       async.filter keys, fn, (results) ->
         callback null, results
+
+  whitelist: (keys, callback) ->
+    whitelist = (key, callback) =>
+      async.series [
+        (callback) =>
+          @redisClient.srem @constructor.BLACKLIST_KEY, "#{@prefix}:#{key}",
+            callback
+
+        (callback) =>
+          @redisClient.sadd @constructor.WHITELIST_KEY, "#{@prefix}:#{key}",
+            callback
+
+      ], callback
+
+    async.each keys, whitelist, callback
+
+  unwhitelist: (keys, callback) ->
+    unwhitelist = (key, callback) =>
+      @redisClient.srem @constructor.WHITELIST_KEY, "#{@prefix}:#{key}",
+        callback
+
+    async.each keys, unwhitelist, callback
+
+  blacklist: (keys, callback) ->
+    blacklist = (key, callback) =>
+      async.series [
+        (callback) =>
+          @redisClient.srem @constructor.WHITELIST_KEY, "#{@prefix}:#{key}",
+            callback
+
+        (callback) =>
+          @redisClient.sadd @constructor.BLACKLIST_KEY, "#{@prefix}:#{key}",
+            callback
+
+      ], callback
+
+    async.each keys, blacklist, callback
+
+  unblacklist: (keys, callback) ->
+    unblacklist = (key, callback) =>
+      @redisClient.srem @constructor.BLACKLIST_KEY, "#{@prefix}:#{key}",
+        callback
+
+    async.each keys, unblacklist, callback

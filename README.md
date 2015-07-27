@@ -10,6 +10,7 @@ Features
 * Uses a sliding window for a rate limit rule
 * Multiple rules per instance
 * Multiple instances of RateLimit side-by-side for different categories of users.
+* Whitelisting/blacklisting of keys
 * Includes Express middleware
 
 Background
@@ -71,6 +72,35 @@ Is rate limited? true
 Is rate limited? true
 Is rate limited? true
 Is rate limited? true
+```
+
+Whitelist/Blacklist Usage
+-------------------------
+
+You can whitelist or blacklist a set of keys to enforce automatically allowing all actions
+(whitelisting) or automatically denying all actions (blacklisting). Whitelists and blacklists
+do not expire so they can be used to allow or limit actions indefinitely.
+
+Add to or remove from the whitelist:
+
+```javascript
+var RateLimit = require('ratelimit.js').RateLimit;
+var redis = require('redis');
+var rateLimiter = new RateLimit(redis.createClient(), [{interval: 1, limit: 10}]);
+
+rateLimiter.whitelist(['127.0.0.1'], console.log);
+rateLimiter.unwhitelist(['127.0.0.1'], console.log);
+```
+
+Add to or remove from the blacklist:
+
+```javascript
+var RateLimit = require('ratelimit.js').RateLimit;
+var redis = require('redis');
+var rateLimiter = new RateLimit(redis.createClient(), [{interval: 1, limit: 10}]);
+
+rateLimiter.blacklist(['127.0.0.1'], console.log);
+rateLimiter.unblacklist(['127.0.0.1'], console.log);
 ```
 
 Express Middleware Usage
@@ -150,6 +180,8 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.6.0**
+  * Add support for whitelisting and blacklisting keys
 * **1.5.0**
   * Add `weight` functionality to `ExpressMiddleware`
   * `ExpressMiddleware.middleware` now takes an options object instead of just `extractIps`
