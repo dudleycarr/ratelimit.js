@@ -16,12 +16,6 @@ describe 'RateLimit', ->
     ]
     ratelimit = new RateLimit redisClient, rules
 
-  afterEach (done) ->
-    # Delete all keys
-    redisClient.keys 'ratelimit:*', (err, keys) ->
-      redisClient.del keys... if keys.length
-    done()
-
   incrAndCheck = (num, value, callback) ->
     ratelimit.incr ['127.0.0.1'], 1, (err, isLimited) ->
       isLimited.should.eql value
@@ -36,7 +30,6 @@ describe 'RateLimit', ->
     async.times num, incrFn, callback
 
   describe 'incr', ->
-
     it 'should not rate limit provided below rule rates', (done) ->
       bump 8, incrAndFalse, done
 
@@ -105,3 +98,22 @@ describe 'RateLimit', ->
             violated[0].should.eql {interval: 1, limit: 10}
             callback err
       ], done
+
+  describe 'whitelist', ->
+    beforeEach (done) ->
+      ratelimit.whitelist ['127.0.0.1'], done
+
+    it 'should not be limited ever', (done) ->
+      bump 10, incrAndFalse, (err) ->
+        ratelimit.incr ['127.0.0.1'], 10, (err, isLimited) ->
+          isLimited.should.eql false
+          done err
+
+  describe 'blacklist', ->
+    beforeEach (done) ->
+      ratelimit.blacklist ['127.0.0.1'], done
+
+    it 'should be limited on the first try', (done) ->
+      ratelimit.incr ['127.0.0.1'], 1, (err, isLimited) ->
+        isLimited.should.eql true
+        done err

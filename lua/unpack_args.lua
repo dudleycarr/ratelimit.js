@@ -4,3 +4,7 @@ local now = tonumber(ARGV[2])
 local weight = tonumber(ARGV[3] or '1')
 local longest_duration = limits[1][1] or 0
 local saved_keys = {}
+
+-- Data for whitelist and blacklist
+local is_whitelisted = false
+local is_blacklisted = false

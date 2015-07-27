@@ -5,7 +5,7 @@ module.exports = (grunt) ->
       options:
         bare: true
       expand: true
-      src: ['test/**/*.coffee']
+      src: ['test/test_helper.coffee', 'test/**/*.coffee']
       dest: 'test'
       ext: '.js'
 
