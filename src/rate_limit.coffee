@@ -2,7 +2,6 @@ EvalSha = require 'redis-evalsha'
 _ = require 'underscore'
 async = require 'async'
 fs = require 'fs'
-redis = require 'redis'
 
 module.exports = class RateLimit
   @DEFAULT_PREFIX: 'ratelimit'
