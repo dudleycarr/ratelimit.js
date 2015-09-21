@@ -6,12 +6,6 @@ fs = require 'fs'
 module.exports = class RateLimit
   @DEFAULT_PREFIX: 'ratelimit'
 
-  # Note: must sync with lua key in lua/check_whitelist.lua
-  @WHITELIST_KEY: 'whitelist'
-
-  # Note: must sync with lua key in lua/check_blacklist.lua
-  @BLACKLIST_KEY: 'blacklist'
-
   # Note: 1 is returned for a normal rate limited action, 2 is returned for a
   # blacklisted action. Must sync with return codes in lua/check_limit.lua
   @DENIED_NUMS: [1, 2]
@@ -51,6 +45,12 @@ module.exports = class RateLimit
     for rule in rules
       [rule.interval, rule.limit]
 
+  whitelistKey: ->
+    [@prefix, 'whitelist'].join ':'
+
+  blacklistKey: ->
+    [@prefix, 'blacklist'].join ':'
+
   scriptArgs: (keys, weight = 1) ->
     # Keys has to be a list
     adjustedKeys = _.chain([keys])
@@ -67,7 +67,7 @@ module.exports = class RateLimit
     rules = JSON.stringify @rules
     ts = Math.floor Date.now() / 1000
     weight = Math.max weight, 1
-    [adjustedKeys, [rules, ts, weight]]
+    [adjustedKeys, [rules, ts, weight, @whitelistKey(), @blacklistKey()]]
 
   check: (keys, callback) ->
     try
@@ -127,14 +127,13 @@ module.exports = class RateLimit
 
   whitelist: (keys, callback) ->
     whitelist = (key, callback) =>
+      key = [@prefix, key].join ':'
       async.series [
         (callback) =>
-          @redisClient.srem @constructor.BLACKLIST_KEY, "#{@prefix}:#{key}",
-            callback
+          @redisClient.srem @blacklistKey(), key, callback
 
         (callback) =>
-          @redisClient.sadd @constructor.WHITELIST_KEY, "#{@prefix}:#{key}",
-            callback
+          @redisClient.sadd @whitelistKey(), key, callback
 
       ], callback
 
@@ -142,21 +141,20 @@ module.exports = class RateLimit
 
   unwhitelist: (keys, callback) ->
     unwhitelist = (key, callback) =>
-      @redisClient.srem @constructor.WHITELIST_KEY, "#{@prefix}:#{key}",
-        callback
+      key = [@prefix, key].join ':'
+      @redisClient.srem @whitelistKey(), key, callback
 
     async.each keys, unwhitelist, callback
 
   blacklist: (keys, callback) ->
     blacklist = (key, callback) =>
+      key = [@prefix, key].join ':'
       async.series [
         (callback) =>
-          @redisClient.srem @constructor.WHITELIST_KEY, "#{@prefix}:#{key}",
-            callback
+          @redisClient.srem @whitelistKey(), key, callback
 
         (callback) =>
-          @redisClient.sadd @constructor.BLACKLIST_KEY, "#{@prefix}:#{key}",
-            callback
+          @redisClient.sadd @blacklistKey(), key, callback
 
       ], callback
 
@@ -164,7 +162,7 @@ module.exports = class RateLimit
 
   unblacklist: (keys, callback) ->
     unblacklist = (key, callback) =>
-      @redisClient.srem @constructor.BLACKLIST_KEY, "#{@prefix}:#{key}",
-        callback
+      key = [@prefix, key].join ':'
+      @redisClient.srem @blacklistKey(), key, callback
 
     async.each keys, unblacklist, callback
