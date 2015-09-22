@@ -198,6 +198,8 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.7.0**
+  * Fixed issue with whitelist and blacklist entries not being prefixed. Properly document prefix feature.
 * **1.6.1**
   * Remove unused redis require
 * **1.6.0**
