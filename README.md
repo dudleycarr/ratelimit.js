@@ -89,12 +89,22 @@ var rules = [
 // You can define a prefix to be included on each redis entry
 // This prevents collisions if you have multiple applications
 // using the same redis db
-var limiter = new RateLimit(client, rules, 'RedisPrefix');
+var limiter = new RateLimit(client, rules, {prefix: 'RedisPrefix'});
 ```
-**NOTE:** If your redis library supports key prefixing like
-[ioredis](https://github.com/luin/ioredis#transparent-key-prefixing)
-does, this library will _not_ correctly resolve the
-whitelist/blacklist items.
+
+**NOTE:** If your redis client supports transparent prefixing (like
+[ioredis](https://github.com/luin/ioredis#transparent-key-prefixing))
+the following configuration should be used:
+
+```javascript
+var limiter = new RateLimit(ioRedisClient, rules, {
+  prefix: ioRedisClient.keyPrefix,
+  clientPrefix: true
+});
+```
+
+This will only include the prefix in the whitelist/blacklist keys passed to
+the Lua scripts to be executed.
 
 Whitelist/Blacklist Usage
 -------------------------
