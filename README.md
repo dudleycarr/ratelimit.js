@@ -74,6 +74,24 @@ Is rate limited? true
 Is rate limited? true
 ```
 
+Constructor Usage:
+
+```javascript
+var RateLimit = require('ratelimit.js').RateLimit;
+var redis = require('redis');
+
+var client = redis.createClient();
+
+var rules = [
+  {interval: 3600, limit: 1000}
+  ];
+// You can define a prefix to be included on each redis entry
+// This prevents collisions if you have multiple applications
+// using the same redis db
+var limiter = new RateLimit(client, rules, 'RedisPrefix');
+```
+**NOTE:** If your redis library supports key prefixing like [ioredis](https://github.com/luin/ioredis#transparent-key-prefixing) does, this library will _not_ correctly resolve the whitelist/blacklist items.
+
 Whitelist/Blacklist Usage
 -------------------------
 
@@ -180,6 +198,8 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.7.0**
+  * Fixed issue with whitelist and blacklist entries not being prefixed. Properly document prefix feature.
 * **1.6.1**
   * Remove unused redis require
 * **1.6.0**
