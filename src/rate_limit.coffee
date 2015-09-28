@@ -10,7 +10,22 @@ module.exports = class RateLimit
   # blacklisted action. Must sync with return codes in lua/check_limit.lua
   @DENIED_NUMS: [1, 2]
 
-  constructor: (@redisClient, rules, @prefix = @constructor.DEFAULT_PREFIX) ->
+  constructor: (@redisClient, rules, @options = {}) ->
+    # Support passing the prefix directly as the third parameter.
+    if _.isString @options
+      @options =
+        prefix: @options
+
+    # Enforce default prefix if none is defined. Note: use ?= to allow users
+    # to specify an empty prefix. If you are using a redis library that
+    # automatically prefixes keys then you might specify a blank prefix.
+    @options.prefix ?= @constructor.DEFAULT_PREFIX
+
+    # Used if the redis client passed in support transparent prefixing (like
+    # ioredis). This is used for the white/blacklist keys passed to the Lua
+    # scripts.
+    @options.clientPrefix ?= false
+
     @checkFn = 'check_rate_limit'
     @checkIncrFn = 'check_incr_rate_limit'
 
@@ -45,11 +60,21 @@ module.exports = class RateLimit
     for rule in rules
       [rule.interval, rule.limit]
 
+  prefixKey: (key, force = false) ->
+    parts = [key]
+
+    # Support prefixing with an optional `force` argument, but omit prefix by
+    # default if the client library supports transparent prefixing.
+    parts.unshift @options.prefix if force or not @options.clientPrefix
+
+    # The compact handles a falsy prefix
+    _.compact(parts).join ':'
+
   whitelistKey: ->
-    [@prefix, 'whitelist'].join ':'
+    @prefixKey 'whitelist', true
 
   blacklistKey: ->
-    [@prefix, 'blacklist'].join ':'
+    @prefixKey 'blacklist', true
 
   scriptArgs: (keys, weight = 1) ->
     # Keys has to be a list
@@ -59,7 +84,7 @@ module.exports = class RateLimit
       .filter (key) ->
         _.isString(key) and key.length
       .map (key) =>
-        "#{@prefix}:#{key}"
+        @prefixKey key
       .value()
 
     throw new Error "Bad keys: #{keys}" unless adjustedKeys.length
@@ -90,10 +115,10 @@ module.exports = class RateLimit
       callback err, result in @constructor.DENIED_NUMS
 
   keys: (callback) ->
-    @redisClient.keys "#{@prefix}:*", (err, results) =>
+    @redisClient.keys @prefixKey('*'), (err, results) =>
       return callback err if err
 
-      re = new RegExp "#{@prefix}:(.+)"
+      re = new RegExp @prefixKey '(.+)'
       keys = (re.exec(key)[1] for key in results)
       callback null, keys
 
@@ -106,7 +131,7 @@ module.exports = class RateLimit
         precision = Math.min (precision ? interval), interval
         countKey = "#{interval}:#{precision}:"
 
-        @redisClient.hget "#{@prefix}:#{key}", countKey, (err, count = -1) ->
+        @redisClient.hget @prefixKey(key), countKey, (err, count = -1) ->
           return callback() unless count >= limit
           callback null, {interval, limit}
 
@@ -127,7 +152,7 @@ module.exports = class RateLimit
 
   whitelist: (keys, callback) ->
     whitelist = (key, callback) =>
-      key = [@prefix, key].join ':'
+      key = @prefixKey key
       async.series [
         (callback) =>
           @redisClient.srem @blacklistKey(), key, callback
@@ -141,14 +166,14 @@ module.exports = class RateLimit
 
   unwhitelist: (keys, callback) ->
     unwhitelist = (key, callback) =>
-      key = [@prefix, key].join ':'
+      key = @prefixKey key
       @redisClient.srem @whitelistKey(), key, callback
 
     async.each keys, unwhitelist, callback
 
   blacklist: (keys, callback) ->
     blacklist = (key, callback) =>
-      key = [@prefix, key].join ':'
+      key = @prefixKey key
       async.series [
         (callback) =>
           @redisClient.srem @whitelistKey(), key, callback
@@ -162,7 +187,7 @@ module.exports = class RateLimit
 
   unblacklist: (keys, callback) ->
     unblacklist = (key, callback) =>
-      key = [@prefix, key].join ':'
+      key = @prefixKey key
       @redisClient.srem @blacklistKey(), key, callback
 
     async.each keys, unblacklist, callback
