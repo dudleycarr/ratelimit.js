@@ -48,8 +48,8 @@ module.exports = class RateLimit
     ].join '\n'
 
   convertRules: (rules) ->
-    for rule in rules
-      [rule.interval, rule.limit]
+    for {interval, limit, precision} in rules
+      _.compact [interval, limit, precision]
 
   scriptArgs: (keys, weight = 1) ->
     # Keys has to be a list
