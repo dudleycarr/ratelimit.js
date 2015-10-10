@@ -67,7 +67,7 @@ works:</p>
 
 <span class="pl-k">var</span> rules <span class="pl-k">=</span> [
   {interval<span class="pl-k">:</span> <span class="pl-c1">1</span>, limit<span class="pl-k">:</span> <span class="pl-c1">5</span>},
-  {interval<span class="pl-k">:</span> <span class="pl-c1">3600</span>, limit<span class="pl-k">:</span> <span class="pl-c1">1000</span>}
+  {interval<span class="pl-k">:</span> <span class="pl-c1">3600</span>, limit<span class="pl-k">:</span> <span class="pl-c1">1000</span>, precision<span class="pl-k">:</span> <span class="pl-c1">10000</span>}
   ];
 <span class="pl-k">var</span> limiter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">RateLimit</span>(client, rules);
 
@@ -192,6 +192,13 @@ app.use(limitMiddleware.middleware(options, <span class="pl-k">function</span>(<
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>ChangeLog</h2>
 
 <ul>
+<li>
+<strong>1.6.2</strong>
+
+<ul>
+<li>Add support for precision property in rules objects</li>
+</ul>
+</li>
 <li>
 <strong>1.6.1</strong>
 
