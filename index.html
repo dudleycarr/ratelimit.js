@@ -1,34 +1,25 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta charset="UTF-8">
     <title>Ratelimit.js by dudleycarr</title>
-
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>Ratelimit.js</h1>
-        <p>NodeJS library for rate limiting using sliding windows stored in Redis</p>
+    <section class="page-header">
+      <h1 class="project-name">Ratelimit.js</h1>
+      <h2 class="project-tagline">NodeJS library for rate limiting using sliding windows stored in Redis</h2>
+      <a href="https://github.com/dudleycarr/ratelimit.js" class="btn">View on GitHub</a>
+      <a href="https://github.com/dudleycarr/ratelimit.js/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/dudleycarr/ratelimit.js/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-        <p class="view"><a href="https://github.com/dudleycarr/ratelimit.js">View the Project on GitHub <small>dudleycarr/ratelimit.js</small></a></p>
-
-
-        <ul>
-          <li><a href="https://github.com/dudleycarr/ratelimit.js/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/dudleycarr/ratelimit.js/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/dudleycarr/ratelimit.js">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="ratelimitjs" class="anchor" href="#ratelimitjs" aria-hidden="true"><span class="octicon octicon-link"></span></a>RateLimit.js</h1>
 
 <p><a href="https://travis-ci.org/dudleycarr/ratelimit.js"><img src="https://travis-ci.org/dudleycarr/ratelimit.js.svg" alt="Build
@@ -43,6 +34,7 @@ Status"></a> <a href="http://badge.fury.io/js/ratelimit.js"><img src="https://ba
 <li>Uses a sliding window for a rate limit rule</li>
 <li>Multiple rules per instance</li>
 <li>Multiple instances of RateLimit side-by-side for different categories of users.</li>
+<li>Whitelisting/blacklisting of keys</li>
 <li>Includes Express middleware</li>
 </ul>
 
@@ -68,28 +60,28 @@ works:</p>
 
 <p>Basic example:</p>
 
-<div class="highlight highlight-javascript"><pre><span class="pl-s">var</span> RateLimit <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>ratelimit.js<span class="pl-pds">'</span></span>).RateLimit;
-<span class="pl-s">var</span> redis <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span>);
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> RateLimit <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>ratelimit.js<span class="pl-pds">'</span></span>).RateLimit;
+<span class="pl-k">var</span> redis <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span>);
 
-<span class="pl-s">var</span> client <span class="pl-k">=</span> redis.createClient();
+<span class="pl-k">var</span> client <span class="pl-k">=</span> redis.createClient();
 
-<span class="pl-s">var</span> rules <span class="pl-k">=</span> [
+<span class="pl-k">var</span> rules <span class="pl-k">=</span> [
   {interval<span class="pl-k">:</span> <span class="pl-c1">1</span>, limit<span class="pl-k">:</span> <span class="pl-c1">5</span>},
   {interval<span class="pl-k">:</span> <span class="pl-c1">3600</span>, limit<span class="pl-k">:</span> <span class="pl-c1">1000</span>}
   ];
-<span class="pl-s">var</span> limiter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">RateLimit</span>(client, rules);
+<span class="pl-k">var</span> limiter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">RateLimit</span>(client, rules);
 
-<span class="pl-s">var</span> <span class="pl-en">showRateLimited</span> <span class="pl-k">=</span> <span class="pl-st">function</span>(<span class="pl-vpf">err</span>, <span class="pl-vpf">isRateLimited</span>) {
+<span class="pl-k">var</span> <span class="pl-en">showRateLimited</span> <span class="pl-k">=</span> <span class="pl-k">function</span>(<span class="pl-smi">err</span>, <span class="pl-smi">isRateLimited</span>) {
   <span class="pl-k">if</span> (err) {
-    <span class="pl-k">return</span> <span class="pl-en">console</span><span class="pl-s3">.log</span>(<span class="pl-s1"><span class="pl-pds">"</span>Error: <span class="pl-pds">"</span></span> <span class="pl-k">+</span> err);
+    <span class="pl-k">return</span> <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">"</span>Error: <span class="pl-pds">"</span></span> <span class="pl-k">+</span> err);
   }
 
-  <span class="pl-en">console</span><span class="pl-s3">.log</span>(<span class="pl-s1"><span class="pl-pds">"</span>Is rate limited? <span class="pl-pds">"</span></span> <span class="pl-k">+</span> isRateLimited);
+  <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">"</span>Is rate limited? <span class="pl-pds">"</span></span> <span class="pl-k">+</span> isRateLimited);
 };
 
 <span class="pl-c">// Exceed rate limit.</span>
-<span class="pl-k">for</span>(<span class="pl-s">var</span> i <span class="pl-k">=</span> <span class="pl-c1">0</span>; i <span class="pl-k">&lt;</span> <span class="pl-c1">10</span>; i<span class="pl-k">++</span>) {
-  limiter.incr(<span class="pl-s1"><span class="pl-pds">'</span>127.0.0.1<span class="pl-pds">'</span></span>, showRateLimited);
+<span class="pl-k">for</span>(<span class="pl-k">var</span> i <span class="pl-k">=</span> <span class="pl-c1">0</span>; i <span class="pl-k">&lt;</span> <span class="pl-c1">10</span>; i<span class="pl-k">++</span>) {
+  limiter.incr(<span class="pl-s"><span class="pl-pds">'</span>127.0.0.1<span class="pl-pds">'</span></span>, showRateLimited);
 }</pre></div>
 
 <p>Output:</p>
@@ -107,52 +99,90 @@ Is rate limited? true
 </code></pre>
 
 <h2>
+<a id="whitelistblacklist-usage" class="anchor" href="#whitelistblacklist-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Whitelist/Blacklist Usage</h2>
+
+<p>You can whitelist or blacklist a set of keys to enforce automatically allowing all actions
+(whitelisting) or automatically denying all actions (blacklisting). Whitelists and blacklists
+do not expire so they can be used to allow or limit actions indefinitely.</p>
+
+<p>Add to or remove from the whitelist:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> RateLimit <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>ratelimit.js<span class="pl-pds">'</span></span>).RateLimit;
+<span class="pl-k">var</span> redis <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> rateLimiter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">RateLimit</span>(redis.createClient(), [{interval<span class="pl-k">:</span> <span class="pl-c1">1</span>, limit<span class="pl-k">:</span> <span class="pl-c1">10</span>}]);
+
+rateLimiter.whitelist([<span class="pl-s"><span class="pl-pds">'</span>127.0.0.1<span class="pl-pds">'</span></span>], <span class="pl-en">console</span>.log);
+rateLimiter.unwhitelist([<span class="pl-s"><span class="pl-pds">'</span>127.0.0.1<span class="pl-pds">'</span></span>], <span class="pl-en">console</span>.log);</pre></div>
+
+<p>Add to or remove from the blacklist:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> RateLimit <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>ratelimit.js<span class="pl-pds">'</span></span>).RateLimit;
+<span class="pl-k">var</span> redis <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> rateLimiter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">RateLimit</span>(redis.createClient(), [{interval<span class="pl-k">:</span> <span class="pl-c1">1</span>, limit<span class="pl-k">:</span> <span class="pl-c1">10</span>}]);
+
+rateLimiter.blacklist([<span class="pl-s"><span class="pl-pds">'</span>127.0.0.1<span class="pl-pds">'</span></span>], <span class="pl-en">console</span>.log);
+rateLimiter.unblacklist([<span class="pl-s"><span class="pl-pds">'</span>127.0.0.1<span class="pl-pds">'</span></span>], <span class="pl-en">console</span>.log);</pre></div>
+
+<h2>
 <a id="express-middleware-usage" class="anchor" href="#express-middleware-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Express Middleware Usage</h2>
 
 <p>Construct rate limiter and middleware instances:</p>
 
-<div class="highlight highlight-javascript"><pre><span class="pl-s">var</span> RateLimit <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>ratelimit.js<span class="pl-pds">'</span></span>).RateLimit;
-<span class="pl-s">var</span> ExpressMiddleware <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>ratelimit.js<span class="pl-pds">'</span></span>).ExpressMiddleware;
-<span class="pl-s">var</span> redis <span class="pl-k">=</span> <span class="pl-s3">require</span>(<span class="pl-s1"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span>);
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> RateLimit <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>ratelimit.js<span class="pl-pds">'</span></span>).RateLimit;
+<span class="pl-k">var</span> ExpressMiddleware <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>ratelimit.js<span class="pl-pds">'</span></span>).ExpressMiddleware;
+<span class="pl-k">var</span> redis <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span>);
 
-<span class="pl-s">var</span> rateLimiter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">RateLimit</span>(redis.createClient(), [{interval<span class="pl-k">:</span> <span class="pl-c1">1</span>, limit<span class="pl-k">:</span> <span class="pl-c1">10</span>}]);
-<span class="pl-s">var</span> limitMiddleware <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">ExpressMiddleware</span>(rateLimiter);</pre></div>
+<span class="pl-k">var</span> rateLimiter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">RateLimit</span>(redis.createClient(), [{interval<span class="pl-k">:</span> <span class="pl-c1">1</span>, limit<span class="pl-k">:</span> <span class="pl-c1">10</span>}]);
+
+<span class="pl-k">var</span> options <span class="pl-k">=</span> {
+  ignoreRedisErrors<span class="pl-k">:</span> <span class="pl-c1">true</span>; <span class="pl-c">// defaults to false</span>
+};
+<span class="pl-k">var</span> limitMiddleware <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">ExpressMiddleware</span>(rateLimiter, options);</pre></div>
 
 <p>Rate limit every endpoint of an express application:</p>
 
-<div class="highlight highlight-javascript"><pre>app.use(limitMiddleware.middleware(<span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
-  res.<span class="pl-sc">status</span>(<span class="pl-c1">429</span>).json({message<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>rate limit exceeded<span class="pl-pds">'</span></span>});
+<div class="highlight highlight-source-js"><pre>app.use(limitMiddleware.middleware(<span class="pl-k">function</span>(<span class="pl-smi">req</span>, <span class="pl-smi">res</span>, <span class="pl-smi">next</span>) {
+  res.<span class="pl-c1">status</span>(<span class="pl-c1">429</span>).json({message<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>rate limit exceeded<span class="pl-pds">'</span></span>});
 }));</pre></div>
 
 <p>Rate limit specific endpoints:</p>
 
-<div class="highlight highlight-javascript"><pre><span class="pl-s">var</span> limitEndpoint <span class="pl-k">=</span> limitMiddleware.middleware(<span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
-  res.<span class="pl-sc">status</span>(<span class="pl-c1">429</span>).json({message<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>rate limit exceeded<span class="pl-pds">'</span></span>});
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> limitEndpoint <span class="pl-k">=</span> limitMiddleware.middleware(<span class="pl-k">function</span>(<span class="pl-smi">req</span>, <span class="pl-smi">res</span>, <span class="pl-smi">next</span>) {
+  res.<span class="pl-c1">status</span>(<span class="pl-c1">429</span>).json({message<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>rate limit exceeded<span class="pl-pds">'</span></span>});
 });
 
-app.get(<span class="pl-s1"><span class="pl-pds">'</span>/rate_limited<span class="pl-pds">'</span></span>, limitEndpoint, <span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
+app.get(<span class="pl-s"><span class="pl-pds">'</span>/rate_limited<span class="pl-pds">'</span></span>, limitEndpoint, <span class="pl-k">function</span>(<span class="pl-smi">req</span>, <span class="pl-smi">res</span>, <span class="pl-smi">next</span>) {
   <span class="pl-c">// request is not rate limited...</span>
 });
 
-app.post(<span class="pl-s1"><span class="pl-pds">'</span>/another_rate_limited<span class="pl-pds">'</span></span>, limitEndpoint, <span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
+app.post(<span class="pl-s"><span class="pl-pds">'</span>/another_rate_limited<span class="pl-pds">'</span></span>, limitEndpoint, <span class="pl-k">function</span>(<span class="pl-smi">req</span>, <span class="pl-smi">res</span>, <span class="pl-smi">next</span>) {
   <span class="pl-c">// request is not rate limited...</span>
 });</pre></div>
 
 <p>Don't want to deny requests that are rate limited? Not sure why, but go ahead:</p>
 
-<div class="highlight highlight-javascript"><pre>app.use(limitMiddleware.middleware(<span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
+<div class="highlight highlight-source-js"><pre>app.use(limitMiddleware.middleware(<span class="pl-k">function</span>(<span class="pl-smi">req</span>, <span class="pl-smi">res</span>, <span class="pl-smi">next</span>) {
   req.rateLimited <span class="pl-k">=</span> <span class="pl-c1">true</span>;
   next();
 }));</pre></div>
 
-<p>Use a custom IP extraction function:</p>
+<p>Use custom IP extraction and request weight functions:</p>
 
-<div class="highlight highlight-javascript"><pre><span class="pl-st">function</span> <span class="pl-en">extractIps</span>(<span class="pl-vpf">req</span>) {
+<div class="highlight highlight-source-js"><pre><span class="pl-k">function</span> <span class="pl-en">extractIps</span>(<span class="pl-smi">req</span>) {
   <span class="pl-k">return</span> req.ips;
 }
 
-app.use(limitMiddleware.middleware(extractIps, <span class="pl-st">function</span>(<span class="pl-vpf">req</span>, <span class="pl-vpf">res</span>, <span class="pl-vpf">next</span>) {
-  res.<span class="pl-sc">status</span>(<span class="pl-c1">429</span>).json({message<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>rate limit exceeded<span class="pl-pds">'</span></span>});
+<span class="pl-k">function</span> <span class="pl-en">weight</span>(<span class="pl-smi">req</span>) {
+  <span class="pl-k">return</span> <span class="pl-c1">Math</span>.<span class="pl-c1">round</span>(<span class="pl-c1">Math</span>.<span class="pl-c1">random</span>() <span class="pl-k">*</span> <span class="pl-c1">100</span>);
+}
+
+<span class="pl-k">var</span> options <span class="pl-k">=</span> {
+  extractIps<span class="pl-k">:</span> extractIps,
+  weight<span class="pl-k">:</span> weight
+};
+
+app.use(limitMiddleware.middleware(options, <span class="pl-k">function</span>(<span class="pl-smi">req</span>, <span class="pl-smi">res</span>, <span class="pl-smi">next</span>) {
+  res.<span class="pl-c1">status</span>(<span class="pl-c1">429</span>).json({message<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>rate limit exceeded<span class="pl-pds">'</span></span>});
 }));</pre></div>
 
 <p>Note: this is helpful if your application sits behind a proxy (or set of proxies).
@@ -162,6 +192,53 @@ app.use(limitMiddleware.middleware(extractIps, <span class="pl-st">function</spa
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>ChangeLog</h2>
 
 <ul>
+<li>
+<strong>1.6.1</strong>
+
+<ul>
+<li>Remove unused redis require</li>
+</ul>
+</li>
+<li>
+<strong>1.6.0</strong>
+
+<ul>
+<li>Add support for whitelisting and blacklisting keys</li>
+</ul>
+</li>
+<li>
+<strong>1.5.0</strong>
+
+<ul>
+<li>Add <code>weight</code> functionality to <code>ExpressMiddleware</code>
+</li>
+<li>
+<code>ExpressMiddleware.middleware</code> now takes an options object instead of just <code>extractIps</code>
+</li>
+</ul>
+</li>
+<li>
+<strong>1.4.0</strong>
+
+<ul>
+<li>Add <code>violatedRules</code> to RateLimit class to return the set of rules a key has violated</li>
+</ul>
+</li>
+<li>
+<strong>1.3.1</strong>
+
+<ul>
+<li>Small fix to <code>middleware</code> function in <code>ExpressMiddleware</code>
+</li>
+</ul>
+</li>
+<li>
+<strong>1.3.0</strong>
+
+<ul>
+<li>Add options to ExpressMiddleware constructor and support ignoring redis level errors</li>
+</ul>
+</li>
 <li>
 <strong>1.2.0</strong>
 
@@ -194,14 +271,16 @@ app.use(limitMiddleware.middleware(extractIps, <span class="pl-st">function</spa
 <li><a href="https://github.com/dudleycarr">Dudley Carr</a></li>
 <li><a href="https://github.com/joshgummersall">Josh Gummersall</a></li>
 </ul>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/dudleycarr">dudleycarr</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/dudleycarr/ratelimit.js">Ratelimit.js</a> is maintained by <a href="https://github.com/dudleycarr">dudleycarr</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-              <script type="text/javascript">
+
+    </section>
+
+            <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
