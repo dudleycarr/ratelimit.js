@@ -41,7 +41,7 @@ var client = redis.createClient();
 
 var rules = [
   {interval: 1, limit: 5},
-  {interval: 3600, limit: 1000}
+  {interval: 3600, limit: 1000, precision: 10000}
   ];
 var limiter = new RateLimit(client, rules);
 
@@ -180,6 +180,8 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.6.2**
+  * Add support for precision property in rules objects
 * **1.6.1**
   * Remove unused redis require
 * **1.6.0**
