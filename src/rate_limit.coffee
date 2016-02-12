@@ -6,9 +6,8 @@ fs = require 'fs'
 module.exports = class RateLimit
   @DEFAULT_PREFIX: 'ratelimit'
 
-  # Note: 1 is returned for a normal rate limited action, 2 is returned for a
-  # blacklisted action. Must sync with return codes in lua/check_limit.lua
-  @DENIED_NUMS: [1, 2]
+  # This is used to signify a request from a blacklisted identifier
+  @BLACKLIST_NUMBER: 1
 
   constructor: (@redisClient, rules, @options = {}) ->
     # Support passing the prefix directly as the third parameter.
@@ -94,14 +93,36 @@ module.exports = class RateLimit
     weight = Math.max weight, 1
     [adjustedKeys, [rules, ts, weight, @whitelistKey(), @blacklistKey()]]
 
+  handleResult: (callback) ->
+    (err, result) =>
+      return callback err if err
+
+      if _.isNumber result
+        return callback null, result is @constructor.BLACKLIST_NUMBER, []
+
+      # If result is not a number, it's JSON the explains the current state
+      # for the given keys.
+      result = try
+        JSON.parse result
+      catch e
+        []
+
+      ruleState = []
+      for [requests, violated], i in result
+        [interval, limit, precision] = @rules[i] or []
+        ruleState.push {interval, limit, precision, requests, violated}
+
+        return callback null, true, ruleState if violated
+
+      callback null, false, ruleState
+
   check: (keys, callback) ->
     try
       [keys, args] = @scriptArgs keys
     catch err
       return callback err
 
-    @eval.exec @checkFn, keys, args, (err, result) =>
-      callback err, result in @constructor.DENIED_NUMS
+    @eval.exec @checkFn, keys, args, @handleResult callback
 
   incr: (keys, weight, callback) ->
     # Weight is optional.
@@ -111,8 +132,7 @@ module.exports = class RateLimit
     catch err
       return callback err
 
-    @eval.exec @checkIncrFn, keys, args, (err, result) =>
-      callback err, result in @constructor.DENIED_NUMS
+    @eval.exec @checkIncrFn, keys, args, @handleResult callback
 
   keys: (callback) ->
     @redisClient.keys @prefixKey('*'), (err, results) =>

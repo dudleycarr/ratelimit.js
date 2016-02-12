@@ -7,7 +7,7 @@ end
 
 -- Return specific code for blacklisted keys
 if is_blacklisted then
-  return 2
+  return 1
 end
 
 -- handle cleanup and limit checks
@@ -28,7 +28,6 @@ for i, limit in ipairs(limits) do
     saved.ts_key = saved.count_key .. 'o'
 
     for j, key in ipairs(KEYS) do
-
         local old_ts = redis.call('HGET', key, saved.ts_key)
         old_ts = old_ts and tonumber(old_ts) or saved.trim_before
         if old_ts > now then
@@ -58,10 +57,18 @@ for i, limit in ipairs(limits) do
             cur = redis.call('HGET', key, saved.count_key)
         end
 
-        -- check our limits
-        if tonumber(cur or '0') + weight > limit[2] then
-            return 1
+        cur = tonumber(cur or '0')
+
+        local key_stats = {}
+        local violated = cur + weight > limit[2]
+
+        table.insert(key_stats, cur)
+        table.insert(key_stats, violated)
+        table.insert(return_val, key_stats)
+
+        -- Return immediately if we have any violations
+        if violated then
+            return cjson.encode(return_val)
         end
     end
 end
-

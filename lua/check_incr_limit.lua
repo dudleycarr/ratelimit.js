@@ -23,4 +23,4 @@ if not is_whitelisted and not is_blacklisted then
     end
 end
 
-return 0
+return cjson.encode(return_val)
