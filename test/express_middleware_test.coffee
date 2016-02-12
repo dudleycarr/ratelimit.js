@@ -38,9 +38,9 @@ describe 'Express Middleware', ->
       else
         done()
 
-  describe 'extractIps', ->
+  describe 'getIdentifiers', ->
     it 'should extract an IP from an express-style request', ->
-      @middleware.extractIps(ip: '127.0.0.1')
+      @middleware.getIdentifiers(ip: '127.0.0.1')
         .should.eql ['127.0.0.1']
 
   describe '.middleware', ->

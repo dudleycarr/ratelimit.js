@@ -189,7 +189,7 @@ app.use(limitMiddleware.middleware(function(req, res, next) {
 Use custom IP extraction and request weight functions:
 
 ```javascript
-function extractIps(req) {
+function getIdentifiers(req) {
   return req.ips;
 }
 
@@ -198,7 +198,7 @@ function weight(req) {
 }
 
 var options = {
-  extractIps: extractIps,
+  getIdentifiers: getIdentifiers,
   weight: weight
 };
 
@@ -212,6 +212,8 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.7.1**
+  * Rename `extractIps` to `getIdentifiers`, along with backwards-compatibility
 * **1.7.0**
   * Fixed issue with whitelist and blacklist entries not being prefixed. Properly document prefix feature.
 * **1.6.2**
