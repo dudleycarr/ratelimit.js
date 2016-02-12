@@ -64,6 +64,7 @@ for i, limit in ipairs(limits) do
 
         table.insert(key_stats, cur)
         table.insert(key_stats, violated)
+        table.insert(key_stats, now + precision)
         table.insert(return_val, key_stats)
 
         -- Return immediately if we have any violations

@@ -100,21 +100,29 @@ module.exports = class RateLimit
       if _.isNumber result
         return callback null, result is @constructor.BLACKLIST_NUMBER, []
 
-      # If result is not a number, it's JSON the explains the current state
+      # If result is not a number, it's JSON that explains the current state
       # for the given keys.
       result = try
         JSON.parse result
       catch e
         []
 
-      ruleState = []
-      for [requests, violated], i in result
+      rulesState = []
+      for [requests, violated, resetTs], i in result
         [interval, limit, precision] = @rules[i] or []
-        ruleState.push {interval, limit, precision, requests, violated}
 
-        return callback null, true, ruleState if violated
+        rulesState.push {
+          interval
+          limit
+          precision
+          requests
+          violated
+          resetTs
+        }
 
-      callback null, false, ruleState
+        return callback null, true, rulesState if violated
+
+      callback null, false, rulesState
 
   check: (keys, callback) ->
     try
