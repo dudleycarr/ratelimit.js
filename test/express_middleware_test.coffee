@@ -95,7 +95,17 @@ describe 'Express Middleware', ->
         @ratelimitMock.verify()
         done err
 
-    it 'should include ratelimit response headers', (done) ->
+  describe '.middleware with headers option set', ->
+    beforeEach ->
+      @ratelimit = new RateLimit @redisClient, [
+        interval: 3
+        limit: 1
+        precision: 1
+      ]
+
+      @ratelimitMock = @sandbox.mock @ratelimit
+      @middleware = new ExpressMiddleware @ratelimit
+
       @app = express()
       middleware = @middleware.middleware headers: true, (req, res, next) ->
         res.status(429).end()
@@ -106,6 +116,7 @@ describe 'Express Middleware', ->
       @request = =>
         supertest @app
 
+    it 'should include ratelimit response headers', (done) ->
       @request().get('/').expect(200).end (err, {headers} = {}) ->
         return done err if err
 
@@ -116,4 +127,51 @@ describe 'Express Middleware', ->
         headers['x-ratelimit-remaining'].should.eql '0'
 
         should.exist headers['x-ratelimit-reset']
+
         done()
+
+    it 'should not increase reset with each successive request', (done) ->
+      @timeout 4000
+
+      async.waterfall [
+        (callback) =>
+          @request().get('/').expect(200).end (err, {headers} = {}) ->
+            return callback err if err
+
+            should.exist headers['x-ratelimit-reset']
+            setTimeout ->
+              callback null, headers['x-ratelimit-reset']
+            , 1500
+
+        (resetTs, callback) =>
+          @request().get('/').expect(429).end (err, {headers} = {}) =>
+            return done err if err
+
+            should.exist headers['x-ratelimit-reset']
+            headers['x-ratelimit-reset'].should.eql resetTs
+            callback()
+
+      ], done
+
+    it 'should have the correct reset ts', (done) ->
+      @timeout 4000
+
+      async.waterfall [
+        (callback) =>
+          @request().get('/').expect(200).end (err, {headers} = {}) ->
+            return callback err if err
+
+            should.exist headers['x-ratelimit-reset']
+            setTimeout ->
+              callback null, headers['x-ratelimit-reset']
+            , 3300
+
+        (resetTs, callback) =>
+          @request().get('/').expect(200).end (err, {headers} = {}) =>
+            return done err if err
+
+            should.exist headers['x-ratelimit-reset']
+            headers['x-ratelimit-reset'].should.not.eql resetTs
+            callback()
+
+      ], done

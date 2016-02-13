@@ -14,6 +14,7 @@ module.exports = class ExpressMiddleware
     {extractIps, weight, headers} = options
     extractIps or= @extractIps
     weight or= @weight
+    headers or= @options.headers
 
     (req, res, next) =>
       @rateLimiter.incr extractIps(req), weight(req),

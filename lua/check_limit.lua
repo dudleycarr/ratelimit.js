@@ -26,13 +26,14 @@ for i, limit in ipairs(limits) do
     saved.trim_before = saved.block_id - blocks + 1
     saved.count_key = duration .. ':' .. precision .. ':'
     saved.ts_key = saved.count_key .. 'o'
+    saved.last_ts_key = saved.count_key .. 'l'
 
     for j, key in ipairs(KEYS) do
         local old_ts = redis.call('HGET', key, saved.ts_key)
         old_ts = old_ts and tonumber(old_ts) or saved.trim_before
         if old_ts > now then
             -- don't write in the past
-            return 1
+            return cjson.encode(return_val)
         end
 
         -- discover what needs to be cleaned up
@@ -60,15 +61,31 @@ for i, limit in ipairs(limits) do
         cur = tonumber(cur or '0')
 
         local key_stats = {}
-        local violated = cur + weight > limit[2]
 
-        table.insert(key_stats, cur + weight)
-        table.insert(key_stats, violated)
-        table.insert(key_stats, now + precision)
+        local is_violated = cur + weight > limit[2]
+        local req_count = cur
+        local last_ts
+
+        -- If this request will violate the rate limit, the leave req_count set
+        -- to whatever it's currently set to and use the last successful request
+        -- timestamp to compute the reset timestamp. If this request will
+        -- succeed, we add the weight to req_count and use now to compute the
+        -- reset timestamp.
+        if is_violated then
+          last_ts = redis.call('HGET', key, saved.last_ts_key)
+          last_ts = last_ts and tonumber(last_ts) + duration or 0
+        else
+          req_count = req_count + weight
+          last_ts = now + duration
+        end
+
+        table.insert(key_stats, req_count)
+        table.insert(key_stats, is_violated)
+        table.insert(key_stats, last_ts)
         table.insert(return_val, key_stats)
 
         -- Return immediately if we have any violations
-        if violated then
+        if is_violated then
             return cjson.encode(return_val)
         end
     end

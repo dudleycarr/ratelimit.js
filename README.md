@@ -207,11 +207,32 @@ app.use(limitMiddleware.middleware(options, function(req, res, next) {
 }));
 ```
 
+Include ratelimit response headers:
+
+```javascript
+var options = {
+  headers: true
+};
+
+app.use(limitMiddleware.middleware(options, function(req, res, next) {
+  res.status(429).json({message: 'rate limit exceeded'});
+}));
+```
+
+This will include 'x-ratelimit-requests', 'x-ratelimit-remaining', and
+'x-ratelimit-reset' headers in the response indicating (for the rule with the
+least remaining requests) the total number of requests, the number of requests
+remaining before being rate limited, as well as the Unix timestamp for when the
+rate limit will reset.
+
 Note: this is helpful if your application sits behind a proxy (or set of proxies).
 [Read more about express, proxies and req.ips here](http://expressjs.com/guide/behind-proxies.html).
 
 ChangeLog
 ---------
+* **1.8.0**
+  * Provide headers option in Express middleware to include request state as response headers
+  * Includes refactoring of Redis Lua code to return rule state instead of numbers
 * **1.7.0**
   * Fixed issue with whitelist and blacklist entries not being prefixed. Properly document prefix feature.
 * **1.6.2**

@@ -9,6 +9,7 @@ if not is_whitelisted and not is_blacklisted then
         for j, key in ipairs(KEYS) do
             -- update the current timestamp, count, and bucket count
             redis.call('HSET', key, saved.ts_key, saved.trim_before)
+            redis.call('HSET', key, saved.last_ts_key, now)
             redis.call('HINCRBY', key, saved.count_key, weight)
             redis.call('HINCRBY', key, saved.count_key .. saved.block_id, weight)
         end
