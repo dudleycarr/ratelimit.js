@@ -212,6 +212,8 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
+* **1.7.1**
+  * Refactor whitelist/blacklist lua code to be simpler and slightly more performant
 * **1.7.0**
   * Fixed issue with whitelist and blacklist entries not being prefixed. Properly document prefix feature.
 * **1.6.2**
