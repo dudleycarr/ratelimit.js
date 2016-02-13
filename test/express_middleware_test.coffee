@@ -94,3 +94,26 @@ describe 'Express Middleware', ->
       @request().get('/weight').expect(200).end (err) =>
         @ratelimitMock.verify()
         done err
+
+    it 'should include ratelimit response headers', (done) ->
+      @app = express()
+      middleware = @middleware.middleware headers: true, (req, res, next) ->
+        res.status(429).end()
+
+      @app.get '/', middleware, (req, res, next) ->
+        res.status(200).end()
+
+      @request = =>
+        supertest @app
+
+      @request().get('/').expect(200).end (err, {headers} = {}) ->
+        return done err if err
+
+        should.exist headers['x-ratelimit-requests']
+        headers['x-ratelimit-requests'].should.eql '1'
+
+        should.exist headers['x-ratelimit-remaining']
+        headers['x-ratelimit-remaining'].should.eql '0'
+
+        should.exist headers['x-ratelimit-reset']
+        done()

@@ -62,7 +62,7 @@ for i, limit in ipairs(limits) do
         local key_stats = {}
         local violated = cur + weight > limit[2]
 
-        table.insert(key_stats, cur)
+        table.insert(key_stats, cur + weight)
         table.insert(key_stats, violated)
         table.insert(key_stats, now + precision)
         table.insert(return_val, key_stats)
