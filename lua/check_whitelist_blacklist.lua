@@ -5,7 +5,7 @@ for _, key in ipairs(KEYS) do
         return 0
     end
 
-    local is_set_member = redis.call('SISMEMBER', blacklist_key, key)
+    is_set_member = redis.call('SISMEMBER', blacklist_key, key)
     if tonumber(is_set_member) > 0 then
         return 2
     end
