@@ -21,6 +21,9 @@ works:
 * [Introduction to Rate Limiting with Redis Part 1](http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with.html)
 * [Introduction to Rate Limiting with Redis Part 2](http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with_26.html)
 
+For more information on the `weight` and `precision` options, see the second
+blog post above.
+
 Install
 -------
 
@@ -41,7 +44,7 @@ var client = redis.createClient();
 
 var rules = [
   {interval: 1, limit: 5},
-  {interval: 3600, limit: 1000, precision: 10000}
+  {interval: 3600, limit: 1000, precision: 100}
   ];
 var limiter = new RateLimit(client, rules);
 
@@ -212,8 +215,10 @@ Note: this is helpful if your application sits behind a proxy (or set of proxies
 
 ChangeLog
 ---------
-* **1.7.1**
+* **1.8.0**
   * Rename `extractIps` to `getIdentifiers`, along with backwards-compatibility
+* **1.7.1**
+  * Refactor whitelist/blacklist lua code to be simpler and slightly more performant
 * **1.7.0**
   * Fixed issue with whitelist and blacklist entries not being prefixed. Properly document prefix feature.
 * **1.6.2**
