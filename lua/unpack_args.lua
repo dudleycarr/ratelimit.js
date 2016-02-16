@@ -8,5 +8,3 @@ local saved_keys = {}
 -- Locals for whitelist and blacklist ops
 local whitelist_key = ARGV[4] or 'whitelist'
 local blacklist_key = ARGV[5] or 'blacklist'
-local is_whitelisted = false
-local is_blacklisted = false
