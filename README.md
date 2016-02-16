@@ -192,7 +192,7 @@ app.use(limitMiddleware.middleware(function(req, res, next) {
 Use custom IP extraction and request weight functions:
 
 ```javascript
-function extractIps(req) {
+function getIdentifiers(req) {
   return req.ips;
 }
 
@@ -201,7 +201,7 @@ function weight(req) {
 }
 
 var options = {
-  extractIps: extractIps,
+  getIdentifiers: getIdentifiers,
   weight: weight
 };
 
@@ -235,8 +235,9 @@ ChangeLog
 ---------
 * **1.8.1**
   * Provide headers option in Express middleware to include request state as response headers
-* **1.8.0**
   * Includes refactoring of Redis Lua code to return rule state instead of numbers
+* **1.8.0**
+  * Rename `extractIps` to `getIdentifiers`, along with backwards-compatibility
 * **1.7.1**
   * Refactor whitelist/blacklist lua code to be simpler and slightly more performant
 * **1.7.0**

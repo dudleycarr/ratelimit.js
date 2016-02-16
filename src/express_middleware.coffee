@@ -1,7 +1,7 @@
 module.exports = class ExpressMiddleware
   constructor: (@rateLimiter, @options = {}) ->
 
-  extractIps: (req) ->
+  getIdentifiers: (req) ->
     [req.ip]
 
   weight: (req) ->
@@ -11,13 +11,15 @@ module.exports = class ExpressMiddleware
     [callback, options] = [options, {}] unless callback
 
     # Pull out and default extraction functions
-    {extractIps, weight, headers} = options
-    extractIps or= @extractIps
+    {getIdentifiers, extractIps, weight, headers} = options
+    getIdentifiers or= extractIps # For backward-compatibility
+    getIdentifiers or= @getIdentifiers
+
     weight or= @weight
     headers or= @options.headers
 
     (req, res, next) =>
-      @rateLimiter.incr extractIps(req), weight(req),
+      @rateLimiter.incr getIdentifiers(req), weight(req),
         (err, isLimited, rulesState) =>
           if err
             if @options.ignoreRedisErrors
