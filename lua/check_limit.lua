@@ -1,15 +1,5 @@
 -- Credit: http://www.dr-josiah.com/2014/11/introduction-to-rate-limiting-with_26.html
 
--- Return specific code for whitelisted keys
-if is_whitelisted then
-  return 0
-end
-
--- Return specific code for blacklisted keys
-if is_blacklisted then
-  return 1
-end
-
 -- handle cleanup and limit checks
 for i, limit in ipairs(limits) do
     local duration = limit[1]

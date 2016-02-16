@@ -40,8 +40,7 @@ module.exports = class RateLimit
   checkLimitScript: ->
     [
       @readLua 'unpack_args'
-      @readLua 'check_whitelist'
-      @readLua 'check_blacklist'
+      @readLua 'check_whitelist_blacklist'
       @readLua 'check_limit'
       'return 0'
     ].join '\n'
@@ -49,8 +48,7 @@ module.exports = class RateLimit
   checkLimitIncrScript: ->
     [
       @readLua 'unpack_args'
-      @readLua 'check_whitelist'
-      @readLua 'check_blacklist'
+      @readLua 'check_whitelist_blacklist'
       @readLua 'check_limit'
       @readLua 'check_incr_limit'
     ].join '\n'
