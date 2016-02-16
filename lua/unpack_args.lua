@@ -8,3 +8,6 @@ local saved_keys = {}
 -- Locals for whitelist and blacklist ops
 local whitelist_key = ARGV[4] or 'whitelist'
 local blacklist_key = ARGV[5] or 'blacklist'
+
+-- Storage for data to return from Redis
+local return_val = {}

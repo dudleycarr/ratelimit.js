@@ -6,7 +6,7 @@ for i, limit in ipairs(limits) do
 
     for j, key in ipairs(KEYS) do
         -- update the current timestamp, count, and bucket count
-        redis.call('HSET', key, saved.ts_key, saved.trim_before)
+        redis.call('HSET', key, saved.ts_key, now)
         redis.call('HINCRBY', key, saved.count_key, weight)
         redis.call('HINCRBY', key, saved.count_key .. saved.block_id, weight)
     end
@@ -20,4 +20,4 @@ if longest_duration > 0 then
     end
 end
 
-return 0
+return cjson.encode(return_val)
